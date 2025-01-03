@@ -1,4 +1,4 @@
-HOSTNAME=raspberrypi.local
+HOSTNAME=192.168.4.99
 USERNAME=ben
 SOURCE_PATH="../staff_of_observability/*"
 REMOTE_PATH=/home/ben/dev/staff_of_observability

@@ -11,25 +11,25 @@ app = Flask(__name__)
 # Initialize the sensor
 try:
     i2c = board.I2C()  # Uses board.SCL and board.SDA
-    sensor = LSM6DS3(i2c)
+    sensor_lsm6ds = LSM6DS3(i2c)
 except ValueError:
     # If I2C fails, fallback to SPI
     spi = board.SPI()
     cs = board.D5  # Replace D5 with the actual Chip Select pin
-    sensor = LSM6DS3(spi, cs)
+    sensor_lsm6ds = LSM6DS3(spi, cs)
 
 # Enable the pedometer
-sensor.pedometer_enable = True
+sensor_lsm6ds.pedometer_enable = True
 
 # Background thread to update metrics
 def sensor_metrics_updater():
     while True:
         try:
             # Read real sensor values
-            acc_x, acc_y, acc_z = sensor.acceleration
-            gyro_x, gyro_y, gyro_z = sensor.gyro
-            temperature = sensor.temperature
-            step_count = sensor.pedometer_steps
+            acc_x, acc_y, acc_z = sensor_lsm6ds.acceleration
+            gyro_x, gyro_y, gyro_z = sensor_lsm6ds.gyro
+            temperature = sensor_lsm6ds.temperature
+            step_count = sensor_lsm6ds.pedometer_steps
 
             # Update Prometheus metrics
             update_acceleration(acc_x, acc_y, acc_z)

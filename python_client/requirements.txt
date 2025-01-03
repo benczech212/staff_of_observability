@@ -1,2 +1,5 @@
 prometheus_client
 flask
+
+adafruit-circuitpython-lsm6ds
+adafruit-circuitpython-lis3mdl
