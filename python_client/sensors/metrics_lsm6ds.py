@@ -1,29 +1,44 @@
-from prometheus_client import Gauge, Counter
+from app.metrics_manager import create_metrics
+from adafruit_lsm6ds.lsm6ds3 import LSM6DS3
+import board
 
-# Labels for LSM6DS3
-LSM6DS3_LABELS = {'sensor': 'LSM6DS3', 'sensor_type': 'IMU'}
+class LSM6DS3_Sensor:
+    def __init__(self):
+        # Initialize the sensor
+        i2c = board.I2C()
+        self.sensor = LSM6DS3(i2c)
+        self.sensor.pedometer_enable = True
 
-# Create metrics
-LSM6DS3_METRICS = {
-    'acceleration': Gauge('sensor_acceleration', 'Acceleration (m/s^2)', list(LSM6DS3_LABELS.keys()) + ['orientation']),
-    'gyroscope': Gauge('sensor_gyroscope', 'Gyroscope (radians/s)', list(LSM6DS3_LABELS.keys()) + ['orientation']),
-    'temperature': Gauge('sensor_temperature', 'Sensor temperature (Celsius)', list(LSM6DS3_LABELS.keys())),
-    'step_count': Counter('sensor_step_count', 'Total number of steps counted by the pedometer', list(LSM6DS3_LABELS.keys())),
-}
+        # Labels and metrics
+        self.labels = {'sensor': 'LSM6DS3', 'sensor_type': 'IMU'}
+        self.metrics = {
+            'acceleration': create_metrics(self.labels, [
+                {'name': 'sensor_acceleration', 'description': 'Acceleration (m/s^2)', 'metric_type': 'gauge', 'group': 'acceleration', 'label_keys': ['orientation']},
+            ]),
+            'gyroscope': create_metrics(self.labels, [
+                {'name': 'sensor_gyroscope', 'description': 'Gyroscope (radians/s)', 'metric_type': 'gauge', 'group': 'gyroscope', 'label_keys': ['orientation']},
+            ]),
+            'temperature': create_metrics(self.labels, [
+                {'name': 'sensor_temperature', 'description': 'Sensor temperature (Celsius)', 'metric_type': 'gauge', 'group': 'environment'},
+            ]),
+            'step_count': create_metrics(self.labels, [
+                {'name': 'sensor_step_count', 'description': 'Total number of steps counted by the pedometer', 'metric_type': 'counter', 'group': 'pedometer'},
+            ]),
+        }
 
-# Metric update functions
-def update_acceleration(x, y, z):
-    LSM6DS3_METRICS['acceleration'].labels(**LSM6DS3_LABELS, orientation='x').set(x)
-    LSM6DS3_METRICS['acceleration'].labels(**LSM6DS3_LABELS, orientation='y').set(y)
-    LSM6DS3_METRICS['acceleration'].labels(**LSM6DS3_LABELS, orientation='z').set(z)
+    def update_metrics(self):
+        acc_x, acc_y, acc_z = self.sensor.acceleration
+        gyro_x, gyro_y, gyro_z = self.sensor.gyro
+        temperature = self.sensor.temperature
+        step_count = self.sensor.pedometer_steps
 
-def update_gyroscope(x, y, z):
-    LSM6DS3_METRICS['gyroscope'].labels(**LSM6DS3_LABELS, orientation='x').set(x)
-    LSM6DS3_METRICS['gyroscope'].labels(**LSM6DS3_LABELS, orientation='y').set(y)
-    LSM6DS3_METRICS['gyroscope'].labels(**LSM6DS3_LABELS, orientation='z').set(z)
+        self.metrics['acceleration']['x'].labels(orientation='x').set(acc_x)
+        self.metrics['acceleration']['y'].labels(orientation='y').set(acc_y)
+        self.metrics['acceleration']['z'].labels(orientation='z').set(acc_z)
 
-def update_temperature(temp):
-    LSM6DS3_METRICS['temperature'].labels(**LSM6DS3_LABELS).set(temp)
+        self.metrics['gyroscope']['x'].labels(orientation='x').set(gyro_x)
+        self.metrics['gyroscope']['y'].labels(orientation='y').set(gyro_y)
+        self.metrics['gyroscope']['z'].labels(orientation='z').set(gyro_z)
 
-def increment_step_count(steps):
-    LSM6DS3_METRICS['step_count'].labels(**LSM6DS3_LABELS).inc(steps)
+        self.metrics['temperature'].set(temperature)
+        self.metrics['step_count'].inc(step_count)

@@ -1,5 +1,7 @@
 prometheus_client
 flask
 
-adafruit-circuitpython-lsm6ds
-adafruit-circuitpython-lis3mdl
+adafruit-circuitpython-lsm6ds # 6-axis accelerometer
+adafruit-circuitpython-lis3mdl # 3-axis magnetometer
+adafruit-circuitpython-tsl2591 # high precision light sensor
+adafruit-circuitpython-bh1750 # Ambient light sensor

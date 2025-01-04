@@ -1,48 +1,36 @@
 from flask import Flask
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
-from sensors.metrics_lsm6ds import update_acceleration, update_gyroscope, update_temperature, increment_step_count
-import time
+from sensors.metrics_lsm6ds import LSM6DS3_Sensor
+from sensors.metrics_lis3mdl import LIS3MDL_Sensor
+from sensors.metrics_bh1750 import BH1750_Sensor
+from sensors.metrics_tsl2591 import TSL2591_Sensor
+from sensors.metrics_lsm6dsox import LSM6DSOX_Sensor
 import threading
-import board
-from adafruit_lsm6ds.lsm6ds3 import LSM6DS3
+import time
 
 app = Flask(__name__)
 
-# Initialize the sensor
-try:
-    i2c = board.I2C()  # Uses board.SCL and board.SDA
-    sensor_lsm6ds = LSM6DS3(i2c)
-except ValueError:
-    # If I2C fails, fallback to SPI
-    spi = board.SPI()
-    cs = board.D5  # Replace D5 with the actual Chip Select pin
-    sensor_lsm6ds = LSM6DS3(spi, cs)
+# Load sensors
+sensors = [
+    # LSM6DS3_Sensor(),
+    LIS3MDL_Sensor(),
+    LSM6DSOX_Sensor(),
+    BH1750_Sensor(),
+    TSL2591_Sensor(),
+]
 
-# Enable the pedometer
-sensor_lsm6ds.pedometer_enable = True
-
-# Background thread to update metrics
-def sensor_metrics_updater():
+# Background thread to update all sensor metrics
+def update_sensor_metrics():
     while True:
-        try:
-            # Read real sensor values
-            acc_x, acc_y, acc_z = sensor_lsm6ds.acceleration
-            gyro_x, gyro_y, gyro_z = sensor_lsm6ds.gyro
-            temperature = sensor_lsm6ds.temperature
-            step_count = sensor_lsm6ds.pedometer_steps
-
-            # Update Prometheus metrics
-            update_acceleration(acc_x, acc_y, acc_z)
-            update_gyroscope(gyro_x, gyro_y, gyro_z)
-            update_temperature(temperature)
-            increment_step_count(step_count)
-        except Exception as e:
-            print(f"Error reading sensor data: {e}")
-
-        time.sleep(0.5)  # Adjust the update frequency as needed
+        for sensor in sensors:
+            try:
+                sensor.update_metrics()
+            except Exception as e:
+                print(f"Error updating metrics for {sensor.__class__.__name__}: {e}")
+        time.sleep(0.5)
 
 # Start the background thread
-thread = threading.Thread(target=sensor_metrics_updater, daemon=True)
+thread = threading.Thread(target=update_sensor_metrics, daemon=True)
 thread.start()
 
 @app.route('/metrics')
