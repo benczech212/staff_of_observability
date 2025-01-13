@@ -5,6 +5,7 @@ from sensors.metrics_lis3mdl import LIS3MDL_Sensor
 from sensors.metrics_bh1750 import BH1750_Sensor
 from sensors.metrics_tsl2591 import TSL2591_Sensor
 from sensors.metrics_lsm6dsox import LSM6DSOX_Sensor
+from sensors.metrics_bno055 import BNO055_Sensor
 import threading
 import time
 
@@ -13,10 +14,11 @@ app = Flask(__name__)
 # Load sensors
 sensors = [
     # LSM6DS3_Sensor(),
-    LIS3MDL_Sensor(),
-    LSM6DSOX_Sensor(),
-    BH1750_Sensor(),
-    TSL2591_Sensor(),
+    # LIS3MDL_Sensor(),
+    # LSM6DSOX_Sensor(),
+    # BH1750_Sensor(),
+    # TSL2591_Sensor(),
+    BNO055_Sensor()
 ]
 
 # Background thread to update all sensor metrics
