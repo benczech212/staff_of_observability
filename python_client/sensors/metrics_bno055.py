@@ -8,6 +8,7 @@ class BNO055_Sensor:
         # Initialize the sensor
         i2c = board.I2C()
         self.sensor = adafruit_bno055.BNO055_I2C(i2c)
+        
 
         # Labels and metrics
         self.labels = {'sensor': 'BNO055', 'sensor_type': 'IMU', 'instance': instance_name}
