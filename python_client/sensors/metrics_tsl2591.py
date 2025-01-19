@@ -14,22 +14,22 @@ class TSL2591_Sensor:
             'lux': Gauge(
                 'sensor_light_lux',
                 'Total light level in lux',
-                list(self.labels.keys())
+                list(self.labels.keys(),['unit'])
             ).labels(**self.labels),
             'infrared': Gauge(
                 'sensor_light_infrared',
                 'Infrared light level (raw)',
-                list(self.labels.keys())
+                list(self.labels.keys(),['unit'])
             ).labels(**self.labels),
             'visible': Gauge(
                 'sensor_light_visible',
                 'Visible light level (raw)',
-                list(self.labels.keys())
+                list(self.labels.keys(),['unit'])
             ).labels(**self.labels),
             'full_spectrum': Gauge(
                 'sensor_light_full_spectrum',
                 'Full spectrum light level (IR + visible, raw)',
-                list(self.labels.keys())
+                list(self.labels.keys(),['unit'])
             ).labels(**self.labels),
         }
 
@@ -43,9 +43,9 @@ class TSL2591_Sensor:
             full_spectrum = self.sensor.full_spectrum
 
             # Update Prometheus metrics
-            self.metrics['lux'].set(lux)
-            self.metrics['infrared'].set(infrared)
-            self.metrics['visible'].set(visible)
-            self.metrics['full_spectrum'].set(full_spectrum)
+            self.metrics['lux'].labels(**self.base_labels, unit='Lux').set(lux)
+            self.metrics['infrared'].labels(**self.base_labels, unit='raw').set(infrared)
+            self.metrics['visible'].labels(**self.base_labels, unit='raw').set(visible)
+            self.metrics['full_spectrum'].labels(**self.base_labels, unit='raw').set(full_spectrum)
         except Exception as e:
             print(f"Error updating TSL2591 metrics: {e}")

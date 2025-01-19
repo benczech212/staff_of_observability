@@ -5,3 +5,7 @@ adafruit-circuitpython-lsm6ds # 6-axis accelerometer
 adafruit-circuitpython-lis3mdl # 3-axis magnetometer
 adafruit-circuitpython-tsl2591 # high precision light sensor
 adafruit-circuitpython-bh1750 # Ambient light sensor
+adafruit-circuitpython-bno055 # 9-axis motion sensor
+adafruit-circuitpython-gps # GPS sensor
+adafruit-circuitpython-apds9960 # Gesture sensor
+adafruit-circuitpython-bme680 # Temperature, humidity, pressure, and gas sensor

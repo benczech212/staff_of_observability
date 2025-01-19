@@ -2,48 +2,63 @@ from prometheus_client import Gauge, start_http_server
 import time
 import board
 import adafruit_gps
+from sensors.base_sensor import BaseSensor
 
-
-class GPS_Metrics:
+class PA1010D_Sensor(BaseSensor):
     def __init__(self, instance_name="GPS"):
+        self.instance_name = instance_name
+        self.metrics = {}
         # Initialize the GPS module
-        i2c = board.I2C()
-        self.gps = self.initialize_gps(i2c)
+        try:
+            i2c = board.I2C()
+            self.gps = self.initialize_gps(i2c)
+        except Exception as e:
+            print(f"Error initializing GPS module: {e}")
+            raise
 
         # Labels and metrics
-        self.labels = {'sensor': 'GPS', 'instance': instance_name}
+        self.base_labels = {'sensor': 'PA1010D', 'instance': instance_name}
         self.metrics = {
-            'latitude': Gauge(
-                'sensor_gps_latitude',
-                'Latitude in decimal degrees',
-                list(self.labels.keys()) + ['geo']
-            ).labels(**self.labels, geo='Lat'),
-            'longitude': Gauge(
-                'sensor_gps_longitude',
-                'Longitude in decimal degrees',
-                list(self.labels.keys()) + ['geo']
-            ).labels(**self.labels, geo='Lng'),
-            'altitude': Gauge(
-                'sensor_gps_altitude',
-                'Altitude in meters',
-                list(self.labels.keys())
-            ).labels(**self.labels),
-            'fix_quality': Gauge(
-                'sensor_gps_fix_quality',
-                'Fix quality (0 = invalid, 1 = GPS fix, 2 = DGPS fix)',
-                list(self.labels.keys())
-            ).labels(**self.labels),
-            'satellites': Gauge(
-                'sensor_gps_satellites',
-                'Number of satellites in view',
-                list(self.labels.keys())
-            ).labels(**self.labels),
-            'speed': Gauge(
-                'sensor_gps_speed',
-                'Speed over ground (knots)',
-                list(self.labels.keys())
-            ).labels(**self.labels),
+            'latitude': self.get_or_create_metric_gauge('sensor_gps_latitude','Latitude in decimal degrees', {'geo': 'Lat', 'unit': 'Degrees'}),
+            'longitude': self.get_or_create_metric_gauge('sensor_gps_longitude','Longitude in decimal degrees', {'geo': 'Lng', 'unit': 'Degrees'}),
+            'altitude': self.get_or_create_metric_gauge('sensor_altitude','Altitude in meters', {'unit': 'Meters'}),
+            'fix_quality': self.get_or_create_metric_gauge('sensor_gps_fix_quality','Fix quality (0 = invalid, 1 = GPS fix, 2 = DGPS fix)'),
+            'satellites': self.get_or_create_metric_gauge('sensor_gps_satellites','Number of satellites in view'),
+            'speed': self.get_or_create_metric_gauge('sensor_speed','Speed over ground (knots)', {'unit': 'Knots'}),
         }
+
+        # self.metrics = {
+        #     'latitude': Gauge(
+        #         'sensor_gps_latitude',
+        #         'Latitude in decimal degrees',
+        #         list(self.base_labels.keys()) + ['geo', 'unit']
+        #     ).labels(**self.base_labels, geo='Lat', unit="Degrees"),
+        #     'longitude': Gauge(
+        #         'sensor_gps_longitude',
+        #         'Longitude in decimal degrees',
+        #         list(self.base_labels.keys()) + ['geo', 'unit']
+        #     ).labels(**self.base_labels, geo='Lng', unit="Degrees"),
+        #     'altitude': Gauge(
+        #         'sensor_altitude',
+        #         'Altitude in meters',
+        #         list(self.base_labels.keys()) + ['unit']
+        #     ).labels(**self.base_labels,unit="Meters"),
+        #     'fix_quality': Gauge(
+        #         'sensor_gps_fix_quality',
+        #         'Fix quality (0 = invalid, 1 = GPS fix, 2 = DGPS fix)',
+        #         list(self.base_labels.keys())
+        #     ).labels(**self.base_labels),
+        #     'satellites': Gauge(
+        #         'sensor_gps_satellites',
+        #         'Number of satellites in view',
+        #         list(self.base_labels.keys())
+        #     ).labels(**self.base_labels),
+        #     'speed': Gauge(
+        #         'sensor_speed_knots',
+        #         'Speed over ground (knots)',
+        #         list(self.base_labels.keys())+['unit']
+        #     ).labels(**self.base_labels,unit="Knots"),
+        # }
 
     def initialize_gps(self, i2c):
         """
