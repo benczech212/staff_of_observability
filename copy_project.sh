@@ -1,8 +1,11 @@
 HOSTNAME=192.168.4.99
 USERNAME=ben
-SOURCE_PATH="../staff_of_observability/*"
+SOURCE_PATHS=( "../staff_of_observability/cirpy_code" "../staff_of_observability/python_client")
 REMOTE_PATH=/home/ben/dev/staff_of_observability
-
+RESTART_SERVICE=false
+if [ "$1" == "--restart" ]; then
+    RESTART_SERVICE=true
+fi
 # until ping -c 1 $HOSTNAME &>/dev/null; do
 #     echo "Waiting for $HOSTNAME to be reachable..."
 #     sleep 5
@@ -13,4 +16,12 @@ REMOTE_PATH=/home/ben/dev/staff_of_observability
 #     echo "Waiting for $HOSTNAME to be reachable..."
 #     sleep 2
 # done
-scp -r $SOURCE_PATH $USERNAME@$HOSTNAME:$REMOTE_PATH
+for SOURCE_PATH in "${SOURCE_PATHS[@]}"
+do
+    echo "Copying $SOURCE_PATH to $HOSTNAME:$REMOTE_PATH"
+    scp -r $SOURCE_PATH $USERNAME@$HOSTNAME:$REMOTE_PATH
+done
+if [ "$RESTART_SERVICE" = true ]; then
+    echo "Restarting service on $HOSTNAME"
+    ssh $USERNAME@$HOSTNAME 'sudo systemctl restart staff_of_observability'
+fi

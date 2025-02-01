@@ -4,10 +4,14 @@ import adafruit_tsl2591
 
 class TSL2591_Sensor:
     def __init__(self, instance_name="TSL2591"):
+        self.instance_name = instance_name
         # Initialize the sensor
-        i2c = board.I2C()  # Uses board.SCL and board.SDA
-        self.sensor = adafruit_tsl2591.TSL2591(i2c)
-
+        try:
+            i2c = board.I2C()  # Uses board.SCL and board.SDA
+            self.sensor = adafruit_tsl2591.TSL2591(i2c)
+        except: 
+            print(f"Error initializing TSL2591 sensor: {e}")
+            self.sensor = None
         # Labels and metrics
         self.labels = {'sensor': 'TSL2591', 'sensor_type': 'Light', 'instance': instance_name}
         self.metrics = {
@@ -32,6 +36,7 @@ class TSL2591_Sensor:
                 list(self.labels.keys(),['unit'])
             ).labels(**self.labels),
         }
+        self.sensor_values = {}
 
     def update_metrics(self):
         """Update the TSL2591 metrics."""
@@ -41,6 +46,13 @@ class TSL2591_Sensor:
             infrared = self.sensor.infrared
             visible = self.sensor.visible
             full_spectrum = self.sensor.full_spectrum
+
+            self.sensor_values = {
+                'lux': lux,
+                'infrared': infrared,
+                'visible': visible,
+                'full_spectrum': full_spectrum
+            }
 
             # Update Prometheus metrics
             self.metrics['lux'].labels(**self.base_labels, unit='Lux').set(lux)

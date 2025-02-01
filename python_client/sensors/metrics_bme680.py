@@ -13,7 +13,8 @@ class BME680_Sensor(BaseSensor):
             self.sensor = adafruit_bme680.Adafruit_BME680_I2C(i2c)
         except Exception as e:
             print(f"Error initializing BME680 sensor: {e}")
-            raise
+            self.sensor = None
+
 
         # Define Prometheus metrics
         self.base_labels = {'sensor': 'BME680', 'sensor_type': 'Environmental'}
@@ -39,12 +40,13 @@ class BME680_Sensor(BaseSensor):
                 'Pressure in hPa from the BME680 sensor',
                 {'unit': 'hPa'}
             ),
-            'altitude': self.get_or_create_metric_gauge(
-                'sensor_altitude',
-                'Estimated altitude in meters from the BME680 sensor',
-                {'unit': 'Meters'}
-            )
+            # 'altitude': self.get_or_create_metric_gauge(
+            #     'sensor_altitude',
+            #     'Estimated altitude in meters from the BME680 sensor',
+            #     {'unit': 'Meters'}
+            # )
         }
+        self.sensor_values = {}
         # self.metrics = {
         #     'temperature': Gauge(
         #     'temperature',
@@ -81,11 +83,19 @@ class BME680_Sensor(BaseSensor):
             pressure = self.sensor.pressure
             altitude = self.sensor.altitude
 
+            self.sensor_values = {
+                'temperature': temperature,
+                'gas': gas,
+                'humidity': humidity,
+                'pressure': pressure,
+                # 'altitude': altitude
+            }
+
             # Update Prometheus metrics
             self.metrics['temperature'].set(temperature)
             self.metrics['gas'].set(gas)
             self.metrics['humidity'].set(humidity)
             self.metrics['pressure'].set(pressure)
-            self.metrics['altitude'].set(altitude)
+            # self.metrics['altitude'].set(altitude)
         except Exception as e:
             print(f"Error updating BME680 metrics: {e}")

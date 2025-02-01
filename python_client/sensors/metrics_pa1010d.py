@@ -26,6 +26,7 @@ class PA1010D_Sensor(BaseSensor):
             'satellites': self.get_or_create_metric_gauge('sensor_gps_satellites','Number of satellites in view'),
             'speed': self.get_or_create_metric_gauge('sensor_speed','Speed over ground (knots)', {'unit': 'Knots'}),
         }
+        self.sensor_values = {}
 
         # self.metrics = {
         #     'latitude': Gauge(
@@ -243,8 +244,17 @@ class PA1010D_Sensor(BaseSensor):
             # Read GPS data
             self.gps.update()
             data = self.gps
+            data.speed_knots = 0 if data.speed_knots == None else data.speed_knots
+            data.satellites = 0 if data.satellites == None else data.satellites
             # print(data)
-
+            self.sensor_values = {
+                'latitude': data.latitude,
+                'longitude': data.longitude,
+                'altitude': data.altitude_m,
+                'fix_quality': data.fix_quality,
+                'satellites': data.satellites,
+                'speed': data.speed_knots,
+            }
             # Update Prometheus metrics
             self.metrics['latitude'].set(data.latitude)
             self.metrics['longitude'].set(data.longitude)
