@@ -100,8 +100,8 @@ def update_io_devices(refresh_delay=0.1):
         time.sleep(refresh_delay)
 
 # Start sensor metrics update thread
-sensor_thread = threading.Thread(target=update_sensor_metrics, daemon=True)
-sensor_thread.start()
+# sensor_thread = threading.Thread(target=update_sensor_metrics, daemon=True)
+# sensor_thread.start()
 
 # Start I/O devices update thread
 # io_thread = threading.Thread(target=update_io_devices, daemon=True)
@@ -127,6 +127,12 @@ def home():
 @app.route('/metrics')
 def metrics():
     """Expose Prometheus metrics."""
+    for sensor in sensors:
+        try:
+            sensor.update_metrics()
+        except Exception as e:
+            logging.error(f"Error updating metrics for {sensor.__class__.__name__}: {e}")
+
     return generate_latest(), 200, {'Content-Type': CONTENT_TYPE_LATEST}
 
 @app.route('/health')
@@ -217,8 +223,12 @@ def sensors_status():
     """Expose the current status of all sensors."""
     all_sensor_status = {}
     for sensor in sensors:
-        all_sensor_status[sensor.instance_name] = sensor.sensor_values
-        print(sensor.instance_name, sensor.sensor_values)
+        try:
+            sensor.update_metrics()
+            all_sensor_status[sensor.instance_name] = sensor.sensor_values
+            print(sensor.instance_name, sensor.sensor_values)
+        except Exception as e:
+            logging.error(f"Error updating metrics for {sensor.__class__.__name__}: {e}")
     return jsonify(all_sensor_status), 200
 
 
