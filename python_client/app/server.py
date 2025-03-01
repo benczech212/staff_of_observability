@@ -24,7 +24,6 @@ from sensors.metrics_pa1010d import PA1010D_Sensor
 from sensors.metrics_bme680 import BME680_Sensor
 from sensors.metrics_bno085 import BNO08X_Sensor
 
-
 # IO
 from io_devices.rotory_encoder import RotoryEncoder_Driver
 from io_devices.neokey_1x4 import NeoKey1x4_Driver
@@ -83,7 +82,7 @@ def update_sensor_metrics(refresh_delay=0.1):
     while True:
         for sensor in sensors:
             try:
-                sensor._get_gas()
+                sensor.update_metrics()
             except Exception as e:
                 print(f"Error updating metrics for {sensor.__class__.__name__}: {e}")
         time.sleep(refresh_delay)
