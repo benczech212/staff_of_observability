@@ -21,8 +21,9 @@ from sensors.metrics_tsl2591 import TSL2591_Sensor
 from sensors.metrics_lsm6dsox import LSM6DSOX_Sensor
 from sensors.metrics_bno055 import BNO055_Sensor
 from sensors.metrics_pa1010d import PA1010D_Sensor
-from sensors.metrics_bme680 import BME680_Sensor
+# from sensors.metrics_bme680 import BME680_Sensor
 from sensors.metrics_bno085 import BNO08X_Sensor
+from sensors.otel_bme680 import BME680_Sensor
 
 # IO
 from io_devices.rotory_encoder import RotoryEncoder_Driver
@@ -65,8 +66,8 @@ sensors = [
     # BH1750_Sensor(),
     # TSL2591_Sensor(),
     # BNO08X_Sensor(), #imu
-    BNO055_Sensor(), #imu
-    PA1010D_Sensor(), #gps
+    # BNO055_Sensor(), #imu
+    # PA1010D_Sensor(), #gps
     BME680_Sensor() #air quality
 ]
 
