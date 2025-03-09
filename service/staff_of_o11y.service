@@ -1,0 +1,14 @@
+[Unit]
+Description=Staff of Observability Service
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/sysconfig/staff_of_o11y
+ExecStart=sudo $CIRPY_PATH $START_PATH
+WorkingDirectory=$WORKING_DIR
+Restart=always
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target

@@ -1,6 +1,7 @@
 from adafruit_seesaw import rotaryio, digitalio, seesaw, neopixel
-
+import time
 import board
+import math
 
 class NeoPixelDriver():
     def __init__(self, pixel_count = 1, device_name="NeoPixels1", i2c_address=0x60, neo_pin = 15, brightness = 0.5):
@@ -26,7 +27,10 @@ class NeoPixelDriver():
         self.pixels = neopixel.NeoPixel(self.seesaw, self.neo_pin, self.pixel_count, brightness = self.brightness)
 
         self.status = {}
+        self.fill_color((0,0,0))
         self.update()
+        
+
 
     def update(self):
         """
@@ -39,7 +43,7 @@ class NeoPixelDriver():
             "brightness": self.brightness,
             "pixel_count": self.pixel_count
         }
-        print(self.status)
+        
         return self.status
 
     def set_brightness(self, brightness):
@@ -77,3 +81,33 @@ class NeoPixelDriver():
         self.pixels[pixel] = color
         print(f"NeoPixel {pixel} color set to {color}")
         self.update()
+
+    def fill_color(self, color):
+        """
+        Fill all NeoPixels with a color.
+        
+        Args:
+            color (int): The color value.
+        """
+        for i in range(self.pixel_count):
+            self.set_pixel_color(i, color)
+        
+        self.update()
+
+    def breath_animation(self, color, steps=100):
+        """
+        Perform a breathing animation on the NeoPixels.
+        
+        Args:
+            color (int): The color value.
+            duration (float): The duration of the animation in seconds.
+        """
+        for i in range(steps):
+            brightness = (1 - abs((i / (steps / 2)) - 1))  # Triangle wave
+            self.pixels.brightness = brightness
+            self.pixels.fill(color)
+            # time.sleep(cycle_duration / steps)
+            # self.pixels.show()
+        self.pixels.show()
+        self.update()
+        

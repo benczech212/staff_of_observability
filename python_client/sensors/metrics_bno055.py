@@ -7,13 +7,17 @@ from math import atan2, degrees
 class BNO055_Sensor:
     def __init__(self, instance_name="BNO055"):
         self.instance_name = instance_name
-        try:
         # Initialize the sensor
-            i2c = board.I2C()
-            self.sensor = adafruit_bno055.BNO055_I2C(i2c)    
-        except Exception as e:
-            print(f"Error initializing BNO055 sensor: {e}")    
-            self.sensor = None
+        self.sensor = None
+        while self.sensor is None:
+            try:
+                i2c = board.I2C()
+                self.sensor = adafruit_bno055.BNO055_I2C(i2c)
+            except Exception as e:
+                print(f"Error initializing BNO055 sensor: {e}")
+                time.sleep(5)  # Wait for 5 seconds before trying again
+        if self.sensor is None:
+            print("Failed to initialize BNO055 sensor after multiple attempts.")
 
 
         

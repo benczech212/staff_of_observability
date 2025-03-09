@@ -2,6 +2,9 @@
 SERVER_PORT = 9200
 LOG_PATH = '/var/log/staff_of_o11y.log'
 PIXEL_COUNT = 28
+PROMETHEUS_HOST = 'localhost'
+PROMETHEUS_PORT = 9090
+
 
 import os
 import threading
@@ -21,9 +24,8 @@ from sensors.metrics_tsl2591 import TSL2591_Sensor
 from sensors.metrics_lsm6dsox import LSM6DSOX_Sensor
 from sensors.metrics_bno055 import BNO055_Sensor
 from sensors.metrics_pa1010d import PA1010D_Sensor
-# from sensors.metrics_bme680 import BME680_Sensor
+from sensors.metrics_bme680 import BME680_Sensor
 from sensors.metrics_bno085 import BNO08X_Sensor
-from sensors.otel_bme680 import BME680_Sensor
 
 # IO
 from io_devices.rotory_encoder import RotoryEncoder_Driver
@@ -67,7 +69,7 @@ sensors = [
     # TSL2591_Sensor(),
     # BNO08X_Sensor(), #imu
     # BNO055_Sensor(), #imu
-    # PA1010D_Sensor(), #gps
+    PA1010D_Sensor(), #gps
     BME680_Sensor() #air quality
 ]
 
@@ -76,7 +78,67 @@ io_devices = [
     # NeoKey1x4_Driver()
 ]
 
-pixel_driver = NeoPixelDriver(pixel_count=PIXEL_COUNT)
+# pixel_driver = NeoPixelDriver(pixel_count=PIXEL_COUNT)
+# def pixel_status_monitor():
+#     while True:
+#         try:
+#             # Check Prometheus health
+#             prometheus_healthy = False
+#             try:
+#                 response = requests.get(f'http://{PROMETHEUS_HOST}:{PROMETHEUS_PORT}/-/healthy')
+#                 if response.status_code == 200:
+#                     prometheus_healthy = True
+#             except requests.exceptions.RequestException:
+#                 prometheus_healthy = False
+
+#             # Check sensor health
+#             sensor_issue = False
+#             for sensor in sensors:
+#                 try:
+#                     sensor.update_metrics()
+#                 except Exception as e:
+#                     logging.error(f"Error updating metrics for {sensor.__class__.__name__}: {e}")
+#                     sensor_issue = True
+            
+#             if not prometheus_healthy:
+#                 # Red alert if Prometheus is not running
+#                 for _ in range(3):
+#                     pixel_driver.pixels.fill((255, 0, 0))
+#                     pixel_driver.pixels.show()
+#                     time.sleep(0.5)
+#                     pixel_driver.pixels.fill((0, 0, 0))
+#                     pixel_driver.pixels.show()
+#                     time.sleep(0.5)
+#             elif sensor_issue:
+#                 # Yellow blinking if there's a sensor issue
+#                 for _ in range(3):
+#                     pixel_driver.pixels.fill((255, 255, 0))
+#                     pixel_driver.pixels.show()
+#                     time.sleep(0.5)
+#                     pixel_driver.pixels.fill((0, 0, 0))
+#                     pixel_driver.pixels.show()
+#                     time.sleep(0.5)
+#             else:
+#                 # Green breathing animation if everything is normal
+#                 pixel_driver.pixels.fill((0, 255, 0))
+#                 pixel_driver.pixels.show()
+#                 # for i in range(0, 256, 5):
+#                 #     pixel_driver.pixels.fill((0, i, 0))
+#                 #     pixel_driver.pixels.show()
+#                 #     time.sleep(0.05)
+#                 # for i in range(255, -1, -5):
+#                 #     pixel_driver.pixels.fill((0, i, 0))
+#                 #     pixel_driver.pixels.show()
+#                 #     time.sleep(0.05)
+
+#         except Exception as e:
+#             logging.error(f"Error in pixel status monitor: {e}")
+#         time.sleep(2)
+# # Start NeoPixel status thread
+# pixel_status_thread = threading.Thread(target=pixel_status_monitor, daemon=True)
+# pixel_status_thread.start()
+
+
 
 # Background thread to update all sensor metrics
 def update_sensor_metrics(refresh_delay=0.1):

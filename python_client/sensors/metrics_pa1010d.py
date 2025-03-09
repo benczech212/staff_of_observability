@@ -16,6 +16,7 @@ class PA1010D_Sensor(BaseSensor):
             print(f"Error initializing GPS module: {e}")
             raise
 
+
         # Labels and metrics
         self.base_labels = {'sensor': 'PA1010D', 'instance': instance_name}
         self.metrics = {

@@ -1,8 +1,8 @@
-HOSTNAME=192.168.4.99
+HOSTNAME=192.168.4.104
 USERNAME=ben
-SOURCE_PATHS=( "../staff_of_observability/cirpy_code" "../staff_of_observability/python_client")
+SOURCE_PATHS=( "../staff_of_observability/python_client")
 REMOTE_PATH=/home/ben/dev/staff_of_observability
-RESTART_SERVICE=false
+RESTART_SERVICE=true
 if [ "$1" == "--restart" ]; then
     RESTART_SERVICE=true
 fi
@@ -19,9 +19,9 @@ fi
 for SOURCE_PATH in "${SOURCE_PATHS[@]}"
 do
     echo "Copying $SOURCE_PATH to $HOSTNAME:$REMOTE_PATH"
-    scp -r $SOURCE_PATH $USERNAME@$HOSTNAME:$REMOTE_PATH
+    sudo scp -r $SOURCE_PATH $USERNAME@$HOSTNAME:$REMOTE_PATH
 done
 if [ "$RESTART_SERVICE" = true ]; then
     echo "Restarting service on $HOSTNAME"
-    ssh $USERNAME@$HOSTNAME 'sudo systemctl restart staff_of_observability'
+    ssh $USERNAME@$HOSTNAME 'sudo systemctl restart staff_of_o11y'
 fi
